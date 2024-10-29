@@ -7,6 +7,8 @@ import pydicom
 import logging
 from PIL import Image
 from concurrent.futures import ThreadPoolExecutor
+from io import BytesIO
+import zipfile
 
 logger = logging.getLogger(__name__)
 
@@ -79,30 +81,18 @@ def mostrar_exploracion_dicom(opciones):
 
 def exportar_imagenes_png_jpg(opciones):
     st.header("Exportar Imágenes a PNG/JPG")
-    st.info("Convierte todas las imágenes DICOM de una carpeta a formato PNG o JPG.")
+    st.info("Convierte imágenes DICOM a formato PNG o JPG aplicando transformaciones opcionales.")
 
-    # Seleccionar la carpeta de origen desde 'data/raw'
-    raw_data_dir = os.path.join(os.getcwd(), 'data', 'raw')
-    processed_data_dir = os.path.join(os.getcwd(), 'data', 'processed')
+    # Subir múltiples archivos DICOM
+    uploaded_files = st.file_uploader(
+        "Cargar archivos DICOM",
+        type=["dcm", "dicom"],
+        accept_multiple_files=True
+    )
 
-    # Verificar si las carpetas existen
-    if not os.path.exists(raw_data_dir):
-        st.error(f"La carpeta de datos crudos no existe: {raw_data_dir}")
+    if not uploaded_files:
+        st.info("Por favor, carga uno o más archivos DICOM para convertir.")
         return
-
-    if not os.path.exists(processed_data_dir):
-        st.info(f"La carpeta de datos procesados no existe. Se creará automáticamente: {processed_data_dir}")
-        os.makedirs(processed_data_dir, exist_ok=True)
-
-    # Listar subcarpetas en 'data/raw'
-    subfolders = [f.name for f in os.scandir(raw_data_dir) if f.is_dir()]
-    if not subfolders:
-        st.warning(f"No se encontraron subcarpetas en: {raw_data_dir}")
-        return
-
-    # Seleccionar una subcarpeta
-    selected_subfolder = st.selectbox("Selecciona la carpeta a convertir", subfolders)
-    source_dir = os.path.join(raw_data_dir, selected_subfolder)
 
     # Seleccionar el tamaño de salida
     size_options = {
@@ -118,63 +108,72 @@ def exportar_imagenes_png_jpg(opciones):
     format_options = ["PNG", "JPG"]
     selected_format = st.selectbox("Selecciona el formato de salida", format_options)
 
+    # Opciones adicionales
+    aplicar_transformaciones = st.checkbox("Aplicar Transformaciones", value=False)
+    opciones_transformaciones = {}
+    if aplicar_transformaciones:
+        st.write("### Selecciona las Transformaciones a Aplicar")
+
+        # Crear una lista de transformaciones
+        transformaciones = [
+            ('voltear_horizontal', "Volteo Horizontal"),
+            ('voltear_vertical', "Volteo Vertical"),
+            ('brillo_contraste', "Ajuste de Brillo y Contraste"),
+            ('ruido_gaussiano', "Añadir Ruido Gaussiano"),
+            ('recorte_redimension', "Recorte Aleatorio y Redimensionado"),
+            ('desenfoque', "Aplicar Desenfoque")
+        ]
+
+        # Diccionario para almacenar las selecciones
+        for key, label in transformaciones:
+            opciones_transformaciones[key] = st.checkbox(label=label, value=False, key=key)
+
     # Botón para iniciar la conversión
     if st.button("Iniciar Conversión"):
         with st.spinner("Procesando las imágenes..."):
-            # Definir la carpeta de salida
-            output_dir = os.path.join(processed_data_dir, selected_subfolder)
-            os.makedirs(output_dir, exist_ok=True)
-
-            # Listar todos los archivos DICOM en la carpeta de origen
-            dicom_files = []
-            for root, dirs, files in os.walk(source_dir):
-                for file in files:
-                    if file.lower().endswith(('.dcm', '.dicom')):
-                        dicom_files.append(os.path.join(root, file))
-
-            total_files = len(dicom_files)
+            total_files = len(uploaded_files)
             if total_files == 0:
-                st.warning(f"No se encontraron archivos DICOM en la carpeta: {source_dir}")
+                st.warning("No se encontraron archivos DICOM para procesar.")
                 return
 
             progress_bar = st.progress(0)
             status_text = st.empty()
 
-            # Función para procesar una sola imagen
-            def process_image(dicom_path):
-                image_name = os.path.splitext(os.path.basename(dicom_path))[0]
-                image = convertir_dicom_a_imagen(dicom_path, selected_size)
-                if image is not None:
-                    output_filename = f"{image_name}.{selected_format.lower()}"
-                    output_path = os.path.join(output_dir, output_filename)
-                    try:
-                        image.save(output_path)
-                        return True
-                    except Exception as e:
-                        print(f"Error al guardar {output_path}: {e}")
-                        return False
-                else:
-                    return False
+            # Crear un archivo ZIP en memoria
+            zip_buffer = BytesIO()
+            with zipfile.ZipFile(zip_buffer, "a", zipfile.ZIP_DEFLATED) as zip_file:
+                for idx, dicom_file in enumerate(uploaded_files):
+                    dicom_bytes = dicom_file.getvalue()
+                    image = convertir_dicom_bytes_a_imagen(
+                        dicom_bytes,
+                        selected_size,
+                        aplicar_transformaciones,
+                        opciones_transformaciones
+                    )
+                    if image is not None:
+                        output_filename = f"{os.path.splitext(dicom_file.name)[0]}.{selected_format.lower()}"
+                        img_bytes = BytesIO()
+                        image.save(img_bytes, format=selected_format)
+                        img_bytes.seek(0)
+                        zip_file.writestr(output_filename, img_bytes.read())
+                    else:
+                        st.error(f"No se pudo procesar el archivo: {dicom_file.name}")
 
-            # Procesar imágenes en paralelo
-            with ThreadPoolExecutor(max_workers=4) as executor:
-                futures = []
-                for idx, dicom_path in enumerate(dicom_files):
-                    futures.append(executor.submit(process_image, dicom_path))
-
-                for idx, future in enumerate(futures):
-                    result = future.result()
+                    # Actualizar barra de progreso
                     progress = (idx + 1) / total_files
                     progress_bar.progress(progress)
                     status_text.text(f"Procesando {idx + 1} de {total_files} imágenes...")
 
-            st.success(f"Conversión completada. Imágenes guardadas en: {output_dir}")
+            st.success("Conversión completada.")
 
-    # Información adicional
-    st.write("---")
-    st.write("### Estructura de Carpetas:")
-    st.write(f"- **Origen:** data/raw/{selected_subfolder}")
-    st.write(f"- **Destino:** data/processed/{selected_subfolder}")
+            # Preparar el ZIP para descarga
+            zip_buffer.seek(0)
+            st.download_button(
+                label="Descargar Imágenes Convertidas",
+                data=zip_buffer,
+                file_name="imagenes_convertidas.zip",
+                mime="application/zip"
+            )
 
 # Funciones auxiliares
 
@@ -257,13 +256,13 @@ def obtener_metadatos_relevantes(ds):
     }
     return metadatos
 
-def convertir_dicom_a_imagen(dicom_path, output_size=(224, 224)):
+def convertir_dicom_bytes_a_imagen(dicom_bytes, output_size=(224, 224), aplicar_transformaciones=False, opciones_transformaciones=None):
     """
-    Convierte un archivo DICOM a una imagen PIL Image con el tamaño especificado.
+    Convierte bytes de un archivo DICOM a una imagen PIL Image con el tamaño especificado.
     """
     try:
         # Leer el dataset DICOM
-        dicom = pydicom.dcmread(dicom_path)
+        dicom = pydicom.dcmread(pydicom.filebase.DicomBytesIO(dicom_bytes))
         original_image = dicom.pixel_array
 
         # Aplicar VOI LUT
@@ -275,8 +274,14 @@ def convertir_dicom_a_imagen(dicom_path, output_size=(224, 224)):
             img_windowed = img_windowed.max() - img_windowed
 
         # Normalizar la imagen
-        img_normalized = (img_windowed - img_windowed.min()) / (img_windowed.max() - img_windowed.min()) * 255
-        img_normalized = img_normalized.astype(np.uint8)
+        img_normalized = (img_windowed - img_windowed.min()) / (img_windowed.max() - img_windowed.min())
+
+        # Aplicar transformaciones si está seleccionado
+        if aplicar_transformaciones and opciones_transformaciones:
+            img_normalized = aplicar_transformaciones_a_imagen(img_normalized, opciones_transformaciones)
+
+        # Escalar a 0-255 y convertir a uint8
+        img_normalized = (img_normalized * 255).astype(np.uint8)
 
         # Redimensionar la imagen
         img_resized = Image.fromarray(img_normalized).resize(output_size)
@@ -284,7 +289,7 @@ def convertir_dicom_a_imagen(dicom_path, output_size=(224, 224)):
         return img_resized
 
     except Exception as e:
-        logger.error(f"Error al procesar {dicom_path}: {e}")
+        logger.error(f"Error al procesar el archivo DICOM: {e}")
         return None
 
 def construir_pipeline_transformaciones(opciones):
@@ -350,3 +355,9 @@ def aplicar_transformaciones(data, opciones):
     image_augmented = image_augmented.astype(np.float32) / 255.0
 
     return image_augmented
+
+def aplicar_transformaciones_a_imagen(data, opciones):
+    """
+    Aplica transformaciones a la imagen utilizando Albumentations.
+    """
+    return aplicar_transformaciones(data, opciones)

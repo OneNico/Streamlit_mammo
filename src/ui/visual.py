@@ -13,144 +13,17 @@ logging.basicConfig(level=logging.ERROR)
 logger = logging.getLogger(__name__)
 
 def main():
-    # Inyectar CSS personalizado para estilos profesionales y el nuevo diseño del título
-    css = """
-    <style>
-    @import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
+    # Aplicar estilos desde styles.css
+    with open('src/ui/styles.css') as f:
+        st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
 
-    /* Estilos Generales */
-    body {
-        background-color: #f7f9fc; /* Fondo gris suave */
-        color: #333333; /* Texto en color oscuro */
-        font-family: 'Roboto', sans-serif;
-    }
-
-    /* Estilos de Contenedores y Secciones */
-    .main .block-container{
-        padding-top: 2rem;
-        padding-right: 2rem;
-        padding-left: 2rem;
-        padding-bottom: 2rem;
-    }
-
-    /* Estilos de Títulos y Subtítulos */
-    h1, h2, h3, h4, h5, h6 {
-        color: #2E4053; /* Azul oscuro */
-        font-weight: 700;
-    }
-
-    /* Estilos de Instrucciones */
-    .instruction-text {
-        color: #555555; /* Gris oscuro para instrucciones */
-        font-size: 16px;
-        margin-bottom: 20px;
-    }
-
-    /* Estilos de la Barra Lateral */
-    [data-testid="stSidebar"] {
-        background-color: #f0f2f6; /* Fondo claro */
-        color: #333333;
-    }
-
-    /* Estilos de Widgets en la Barra Lateral */
-    [data-testid="stSidebar"] .st-radio label, 
-    [data-testid="stSidebar"] .st-checkbox label {
-        color: #333333;
-    }
-
-    /* Estilos de Botones */
-    .stButton>button {
-        background-color: #2E86C1; /* Azul médico */
-        color: white;
-        border-radius: 5px;
-        height: 50px;
-        font-size: 16px;
-        font-weight: bold;
-        border: none;
-    }
-    .stButton>button:hover {
-        background-color: #21618C; /* Azul más oscuro al pasar el cursor */
-        color: white;
-    }
-
-    /* Estilos de Inputs y Selectboxes */
-    .stSelectbox, .stFileUploader, .stCheckbox, .stRadio {
-        margin-bottom: 20px;
-    }
-
-    /* Estilos de la Barra de Progreso */
-    .stProgress > div > div {
-        background-color: #2E86C1; /* Azul médico */
-    }
-
-    /* Estilos de Mensajes Informativos */
-    .stAlert {
-        background-color: #D6EAF8; /* Azul claro */
-        color: #154360; /* Azul oscuro para texto */
-        border-left: 4px solid #2E86C1;
-    }
-
-    /* Estilos de Imágenes */
-    .stImage > img {
-        border: 2px solid #2E86C1; /* Borde azul médico */
-        border-radius: 10px;
-    }
-
-    /* Estilos de Expander */
-    .st-expander {
-        background-color: #f0f2f6; /* Fondo claro */
-    }
-
-    /* Estilos de Checkbox y Radio Buttons */
-    .stCheckbox label, .stRadio label {
-        color: #333333;
-    }
-
-    /* Estilos de Texto */
-    p, label {
-        font-size: 16px;
-    }
-
-    /* Estilos de Enlaces */
-    a {
-        color: #2E86C1;
-    }
-
-    /* Ajustes de Espaciado */
-    .css-1kyxreq {
-        margin-bottom: 20px;
-    }
-
-    /* Estilos para el Título Principal */
-    .title-container {
-        text-align: center;
-        margin-bottom: 40px;
-    }
-
-    .title-text {
-        font-size: 36px;
-        font-weight: bold;
-        color: #2E4053;
-        line-height: 1.2;
-    }
-
-    .subtitle-text {
-        font-size: 24px;
-        color: #2E4053;
-        margin-top: 10px;
-    }
-    </style>
-    """
-    st.markdown(css, unsafe_allow_html=True)
-
-    # HTML para el título principal y subtítulo
-    title_html = """
+    # Título principal y subtítulo
+    st.markdown("""
     <div class="title-container">
-        <div class="title-text">Procesamiento, Análisis y Clasificación</div>
-        <div class="subtitle-text">de Mamografías</div>
+        <h1>Procesamiento, Análisis y Clasificación</h1>
+        <h2>de Mamografías</h2>
     </div>
-    """
-    st.markdown(title_html, unsafe_allow_html=True)
+    """, unsafe_allow_html=True)
 
     # Barra lateral
     st.sidebar.header("Opciones de Procesamiento")

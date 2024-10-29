@@ -1,0 +1,8 @@
+streamlit
+Pillow
+transformers
+torch
+pydicom
+numpy
+albumentations
+fpdf

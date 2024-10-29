@@ -6,3 +6,4 @@ pydicom
 numpy
 albumentations
 fpdf
+torchvision

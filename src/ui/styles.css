@@ -1,159 +1,117 @@
-/* src/ui/styles.css */
+/* styles.css */
 
 /* Importar la fuente Roboto */
 @import url('https://fonts.googleapis.com/css2?family=Roboto&display=swap');
 
-/* Estilos generales */
-body {
-    background-color: #ffffff; /* Fondo blanco */
-    color: #333333; /* Texto en color oscuro */
+/* Configuración general */
+body, h1, h2, h3, h4, h5, h6, p, div {
     font-family: 'Roboto', sans-serif;
 }
 
-/* Título principal */
-.title-container {
-    text-align: center;
-    margin-bottom: 40px;
+body {
+    background-color: #f0f2f6;
 }
 
-.title-container h1 {
-    font-size: 36px;
-    font-weight: bold;
-    color: #2E4053; /* Azul oscuro */
-    margin-bottom: 10px;
-}
-
-.title-container h2 {
-    font-size: 24px;
-    color: #2E4053; /* Azul oscuro */
-    margin-top: 0;
-}
-
-/* Instrucciones */
-.instruction-text {
-    color: #555555; /* Gris oscuro */
-    font-size: 16px;
-    margin-bottom: 20px;
-}
-
-/* Barra lateral */
+/* Estilizado de la barra lateral */
 [data-testid="stSidebar"] {
-    background-color: #f8f9fa; /* Fondo claro */
-    color: #333333;
+    background-color: #2E4053;
+    color: white;
 }
 
-[data-testid="stSidebar"] .st-radio label,
-[data-testid="stSidebar"] .st-checkbox label {
-    color: #333333;
+[data-testid="stSidebar"] .css-1d391kg,
+[data-testid="stSidebar"] .css-1lcbmhc,
+[data-testid="stSidebar"] .css-10trblm,
+[data-testid="stSidebar"] .css-1y4p8pa {
+    color: white;
 }
 
-/* Widgets en la barra lateral */
-.stSelectbox, .stFileUploader, .stCheckbox, .stRadio {
+[data-testid="stSidebar"] .css-1d391kg a {
+    color: white;
+}
+
+[data-testid="stSidebar"] .css-1d391kg a:hover {
+    color: #D5D8DC;
+}
+
+/* Estilizado de encabezados */
+h1 {
+    color: #2E4053;
+    text-align: center;
     margin-bottom: 20px;
 }
 
-/* Botones */
-.stButton>button {
-    background-color: #007bff; /* Azul médico */
+/* Estilizado de botones */
+.stButton > button {
+    background-color: #2E4053;
     color: white;
+    border: none;
     border-radius: 5px;
-    height: 50px;
-    font-size: 16px;
-    font-weight: bold;
+    padding: 0.5em 1em;
+}
+
+.stButton > button:hover {
+    background-color: #1B2631;
+    color: white;
     border: none;
 }
 
-.stButton>button:hover {
-    background-color: #0056b3; /* Azul más oscuro al pasar el cursor */
-    color: white;
-}
-
-/* Barra de progreso */
-.stProgress > div > div {
-    background-color: #007bff; /* Azul médico */
-}
-
-/* Mensajes informativos */
-.stAlert {
-    background-color: #e2e3e5; /* Fondo gris claro */
-    color: #333333;
-    border-left: 4px solid #007bff;
-}
-
-/* Imágenes */
-.stImage > img {
-    border: 2px solid #007bff; /* Borde azul médico */
-    border-radius: 10px;
-}
-
-/* Expander */
-.st-expander {
-    background-color: #f8f9fa; /* Fondo claro */
-}
-
-/* Texto */
-p, label {
-    font-size: 16px;
-}
-
-/* Enlaces */
-a {
-    color: #007bff;
-}
-
-/* Ajustes de espaciado */
-.css-1kyxreq {
-    margin-bottom: 20px;
-}
-
-/* Títulos y subtítulos */
-h1, h2, h3, h4, h5, h6 {
-    color: #2E4053; /* Azul oscuro */
-    font-weight: 700;
-}
-
-/* Inputs y selectboxes */
-.stSelectbox, .stFileUploader, .stCheckbox, .stRadio {
-    margin-bottom: 20px;
-}
-
-/* Inputs de texto y cajas de selección */
-.css-1d3z3hw {
-    background-color: #ffffff;
-    color: #333333;
-    border: 1px solid #ced4da;
-    border-radius: 5px;
-}
-
-/* Separadores */
-hr {
-    border: 1px solid #ced4da;
-}
-
-/* Estilos de checkbox y radio buttons */
-.stCheckbox label, .stRadio label {
-    color: #333333;
-}
-
-/* Estilos de mensajes de éxito, información y error */
+/* Estilizado de mensajes informativos */
 .css-1cpxqw2 {
-    background-color: #e9ecef;
-    color: #333333;
+    background-color: #D5D8DC;
+    color: #2E4053;
     border-radius: 5px;
     padding: 10px;
 }
 
 .css-1cpxqw2.e1fqkh3o1 {
-    background-color: #d4edda; /* Verde claro para éxito */
-    color: #155724;
+    background-color: #A9DFBF;
+    color: #1D8348;
 }
 
 .css-1cpxqw2.e1fqkh3o4 {
-    background-color: #fff3cd; /* Amarillo claro para advertencia */
-    color: #856404;
+    background-color: #F9E79F;
+    color: #B7950B;
 }
 
 .css-1cpxqw2.e1fqkh3o2 {
-    background-color: #f8d7da; /* Rojo claro para error */
-    color: #721c24;
+    background-color: #F1948A;
+    color: #922B21;
+}
+
+/* Estilizado de la barra de progreso */
+.css-1aumxhk {
+    background-color: #D5D8DC;
+    border-radius: 5px;
+}
+
+.css-fg4pbf {
+    background-color: #2E4053;
+    border-radius: 5px;
+}
+
+/* Ajuste de fuentes y tamaños de subencabezados */
+h2 {
+    color: #2E4053;
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+/* Estilizado del cargador de archivos */
+.css-16huue1 {
+    background-color: #D5D8DC;
+    border: 1px solid #2E4053;
+    border-radius: 5px;
+}
+
+/* Estilizado de los inputs de texto */
+.css-1d3z3hw {
+    background-color: #D5D8DC;
+    color: #2E4053;
+    border: 1px solid #2E4053;
+    border-radius: 5px;
+}
+
+/* Estilizado de los separadores */
+hr {
+    border: 1px solid #2E4053;
 }

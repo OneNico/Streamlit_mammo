@@ -13,17 +13,233 @@ logging.basicConfig(level=logging.ERROR)
 logger = logging.getLogger(__name__)
 
 def main():
-    # Aplicar estilos desde styles.css
-    with open('src/ui/styles.css') as f:
-        st.markdown(f'<style>{f.read()}</style>', unsafe_allow_html=True)
+    # Inyectar CSS personalizado para estilos profesionales y el nuevo diseño del título
+    css = """
+    <style>
+    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@700&display=swap');
 
-    # Título principal y subtítulo
-    st.markdown("""
-    <div class="title-container">
-        <h1>Procesamiento, Análisis y Clasificación</h1>
-        <h2>de Mamografías</h2>
+    /* Estilos Generales */
+    .stImage > img {
+        border: 2px solid #00BFFF; /* Celeste */
+        border-radius: 10px;
+        box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+    }
+    .stExpander > div {
+        background-color: #f9f9f9;
+        padding: 15px;
+        border-radius: 5px;
+        font-family: 'Roboto', sans-serif;
+    }
+    .main .block-container{
+        padding-top: 2rem;
+        padding-right: 3rem;
+        padding-left: 3rem;
+        padding-bottom: 2rem;
+    }
+
+    /* From Uiverse.io by Spacious74 */ 
+    .outer {
+      width: 800px; /* Aumentado de 800px a 850px para mayor anchura */
+      height: 200px;
+      border-radius: 10px;
+      padding: 1px;
+      background: radial-gradient(circle 230px at 0% 0%, #ffffff, #0c0d0d);
+      position: relative;
+      margin: 0 auto 50px auto; /* Centrado horizontalmente con margen inferior */
+      overflow: hidden; /* Evitar que elementos animados salgan del contenedor */
+    }
+
+    .dot {
+      width: 5px;
+      aspect-ratio: 1;
+      position: absolute;
+      background-color: #fff;
+      box-shadow: 0 0 10px #ffffff;
+      border-radius: 100px;
+      z-index: 2;
+      right: 10%;
+      top: 10%;
+      animation: moveDot 6s linear infinite;
+    }
+
+    @keyframes moveDot {
+      0%,
+      100% {
+        top: 10%;
+        right: 10%;
+      }
+      25% {
+        top: 10%;
+        right: calc(100% - 35px);
+      }
+      50% {
+        top: calc(100% - 25px);
+        right: calc(100% - 35px);
+      }
+      75% {
+        top: calc(100% - 25px);
+        right: 10%;
+      }
+    }
+
+    .card {
+      z-index: 1;
+      width: 100%;
+      height: 100%;
+      border-radius: 9px;
+      border: solid 1px #202222;
+      background-size: 20px 20px;
+      background: radial-gradient(circle 280px at 0% 0%, #444444, #0c0d0d);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      flex-direction: column;
+      color: #fff;
+      overflow-wrap: break-word; /* Añadido para evitar desbordamiento del texto */
+    }
+    .ray {
+      width: 150px;
+      height: 30px;
+      border-radius: 100px;
+      position: absolute;
+      background-color: #c7c7c7;
+      opacity: 0.4;
+      box-shadow: 0 0 50px #fff;
+      filter: blur(10px);
+      transform-origin: 10%;
+      top: 0%;
+      left: 0;
+      transform: rotate(40deg);
+      animation: moveRay 6s linear infinite;
+    }
+
+    @keyframes moveRay {
+        0% { transform: rotate(40deg); }
+        50% { transform: rotate(-40deg); }
+        100% { transform: rotate(40deg); }
+    }
+
+    .card .text {
+      font-weight: bolder;
+      font-size: 2.4rem; /* Reducido de 2.5rem a 2.4rem */
+      background: linear-gradient(45deg, #000000 4%, #fff, #000);
+      background-clip: text;
+      color: transparent;
+      margin-bottom: 5px;
+      text-align: center;
+      line-height: 1.2;
+      padding: 0 20px; /* Aumentado para agregar más margen interno */
+    }
+
+    /* Estilo para resaltar las primeras letras */
+    .card .text .highlight {
+      color: #FFD700; /* Dorado para destacar */
+      background: none;
+      -webkit-background-clip: unset;
+    }
+
+    .line {
+      width: 100%;
+      height: 1px;
+      position: absolute;
+      background-color: #2c2c2c;
+    }
+    .topl {
+      top: 10%;
+      background: linear-gradient(90deg, #888888 30%, #1d1f1f 70%);
+    }
+    .bottoml {
+      bottom: 10%;
+      background: linear-gradient(90deg, #888888 30%, #1d1f1f 70%);
+    }
+    .leftl {
+      left: 10%;
+      width: 1px;
+      height: 100%;
+      background: linear-gradient(180deg, #747474 30%, #222424 70%);
+    }
+    .rightl {
+      right: 10%;
+      width: 1px;
+      height: 100%;
+      background: linear-gradient(180deg, #747474 30%, #222424 70%);
+    }
+
+    /* Estilos para Toggle Switches */
+    .toggle-container {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+    .toggle-container input[type="checkbox"] {
+        display: none;
+    }
+
+    .toggle-container label {
+        position: relative;
+        display: inline-block;
+        width: 50px;
+        height: 24px;
+        background-color: #ccc;
+        border-radius: 24px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+
+    .toggle-container label::after {
+        content: "";
+        position: absolute;
+        width: 20px;
+        height: 20px;
+        left: 2px;
+        top: 2px;
+        background-color: white;
+        border-radius: 50%;
+        transition: transform 0.2s;
+    }
+
+    .toggle-container input[type="checkbox"]:checked + label {
+        background-color: #00BFFF;
+    }
+
+    .toggle-container input[type="checkbox"]:checked + label::after {
+        transform: translateX(26px);
+    }
+
+    .toggle-label {
+        margin-left: 10px;
+        font-family: 'Roboto', sans-serif;
+        font-size: 14px;
+        color: #333;
+    }
+    </style>
+    """
+    st.markdown(css, unsafe_allow_html=True)
+
+    # HTML para el título con "de Mamografías" en segunda línea y centrado
+    title_html = """
+    <div class="outer">
+        <div class="dot"></div>
+        <div class="card">
+            <div class="ray"></div>
+            <div class="text">
+                <div>
+                    <span class="highlight">P</span>rocesamiento,
+                    <span class="highlight">A</span>nálisis y
+                    <span class="highlight">C</span>lasificación
+                </div>
+                <div>de Mamografías.</div>
+            </div>
+            <div class="line topl"></div>
+            <div class="line leftl"></div>
+            <div class="line bottoml"></div>
+            <div class="line rightl"></div>
+        </div>
     </div>
-    """, unsafe_allow_html=True)
+    """
+    st.markdown(title_html, unsafe_allow_html=True)
 
     # Barra lateral
     st.sidebar.header("Opciones de Procesamiento")
@@ -35,7 +251,7 @@ def main():
     opciones = {'tipo_carga': tipo_carga}
 
     if tipo_carga == "Gestión de Imágenes DICOM":
-        st.sidebar.subheader("Opciones para Procesamiento de DICOM")
+        st.sidebar.write("### Opciones para Procesamiento de DICOM")
         subseccion = st.sidebar.radio(
             "Selecciona la subsección",
             ["Exploración de Imágenes DICOM", "Exportar Imágenes a PNG/JPG"]
@@ -43,9 +259,6 @@ def main():
         opciones['subseccion'] = subseccion
 
         if subseccion == "Exploración de Imágenes DICOM":
-            # Instrucciones
-            st.markdown('<p class="instruction-text">Cargue uno o más archivos DICOM para explorar las imágenes.</p>', unsafe_allow_html=True)
-
             # Opciones para Exploración de Imágenes DICOM
             uploaded_files = st.sidebar.file_uploader(
                 "Cargar archivos DICOM",
@@ -62,7 +275,8 @@ def main():
 
             # Si se selecciona aplicar transformaciones, mostrar las opciones
             if opciones['aplicar_transformaciones']:
-                st.sidebar.subheader("Ajustes de Imagen y Filtrado")
+                st.sidebar.write("### Selecciona los Ajustes de Imagen y Filtrado a Aplicar")
+
                 # Crear una lista de transformaciones
                 transformaciones = [
                     ('voltear_horizontal', "Volteo Horizontal"),
@@ -82,11 +296,10 @@ def main():
             gestionar_dicom(opciones)
 
         elif subseccion == "Exportar Imágenes a PNG/JPG":
-            st.markdown('<p class="instruction-text">Cargue archivos DICOM para convertirlos a formato PNG o JPG.</p>', unsafe_allow_html=True)
             gestionar_dicom(opciones)
 
     elif tipo_carga == "Diagnóstico Asistido por AI":
-        st.sidebar.subheader("Opciones para Clasificación mediante Deep Learning")
+        st.sidebar.write("### Opciones para Clasificación mediante Deep Learning")
 
         # Nueva Sección: Selección de Sub-sección
         subseccion_ai = st.sidebar.radio(
@@ -96,14 +309,11 @@ def main():
         opciones['subseccion_ai'] = subseccion_ai
 
         if subseccion_ai == "Procesamiento Individual":
-            st.sidebar.subheader("Procesamiento Individual")
-
-            # Instrucciones
-            st.markdown('<p class="instruction-text">Cargue una imagen en formato DICOM, PNG o JPG para realizar la clasificación.</p>', unsafe_allow_html=True)
+            st.sidebar.write("#### Opciones para Procesamiento Individual")
 
             # Subir una imagen (DICOM, PNG, JPG)
             uploaded_image = st.sidebar.file_uploader(
-                "Cargar imagen",
+                "Cargar imagen (DICOM, PNG, JPG)",
                 type=["dcm", "dicom", "png", "jpg", "jpeg"],
                 accept_multiple_files=False
             )
@@ -112,14 +322,11 @@ def main():
             procesamiento_individual(opciones)
 
         elif subseccion_ai == "Procesamiento Masivo":
-            st.sidebar.subheader("Procesamiento Masivo")
-
-            # Instrucciones
-            st.markdown('<p class="instruction-text">Cargue múltiples imágenes en formato DICOM, PNG o JPG para realizar la clasificación masiva.</p>', unsafe_allow_html=True)
+            st.sidebar.write("#### Opciones para Procesamiento Masivo")
 
             # Subir múltiples imágenes (DICOM, PNG, JPG)
             uploaded_images = st.sidebar.file_uploader(
-                "Cargar imágenes",
+                "Cargar imágenes (DICOM, PNG, JPG)",
                 type=["dcm", "dicom", "png", "jpg", "jpeg"],
                 accept_multiple_files=True
             )

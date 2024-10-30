@@ -13,9 +13,15 @@ def visualizar_dicom(opciones):
     st.write("---")
     st.header("Visor Avanzado de Imágenes DICOM")
 
-    uploaded_files = opciones.get('uploaded_files', [])
+    # Subir múltiples archivos DICOM
+    uploaded_files = st.file_uploader(
+        "Cargar archivos DICOM",
+        type=["dcm", "dicom"],
+        accept_multiple_files=True
+    )
+
     if not uploaded_files:
-        st.info("No has cargado ningún archivo DICOM.")
+        st.info("Por favor, carga uno o más archivos DICOM para visualizar.")
         return
 
     num_imagenes = len(uploaded_files)
@@ -33,9 +39,12 @@ def mostrar_visor(selected_file):
         imagen, ds = procesar_imagen_dicom(selected_file)
 
         if imagen is not None:
-            # Control de brillo
-            brillo = st.slider("Brillo", -100, 100, 0)
-            contraste = st.slider("Contraste", -100, 100, 0)
+            # Control de brillo y contraste
+            col1, col2 = st.columns(2)
+            with col1:
+                brillo = st.slider("Brillo", -100, 100, 0)
+            with col2:
+                contraste = st.slider("Contraste", -100, 100, 0)
 
             # Aplicar ajustes de brillo y contraste
             imagen_editada = ajustar_brillo_contraste(imagen, brillo, contraste)

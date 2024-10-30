@@ -1,5 +1,3 @@
-# src/ui/visual.py
-
 import streamlit as st
 from PIL import Image
 import os
@@ -254,19 +252,11 @@ def main():
         st.sidebar.write("### Opciones para Procesamiento de DICOM")
         subseccion = st.sidebar.radio(
             "Selecciona la subsección",
-            ["Exploración de Imágenes DICOM", "Exportar Imágenes a PNG/JPG"]
+            ["Visor DICOM", "Exportar Imágenes a PNG/JPG"]
         )
         opciones['subseccion'] = subseccion
 
-        if subseccion == "Exploración de Imágenes DICOM":
-            # Opciones para Exploración de Imágenes DICOM
-            uploaded_files = st.sidebar.file_uploader(
-                "Cargar archivos DICOM",
-                type=["dcm", "dicom"],
-                accept_multiple_files=True
-            )
-            opciones['uploaded_files'] = uploaded_files
-
+        if subseccion == "Visor DICOM":
             # Opciones adicionales
             opciones['mostrar_metadatos'] = st.sidebar.checkbox("Mostrar Metadatos", value=False)
             opciones['aplicar_voilut'] = st.sidebar.checkbox("Aplicar VOI LUT", value=False)
@@ -289,7 +279,6 @@ def main():
 
                 # Diccionario para almacenar las selecciones
                 opciones['transformaciones_seleccionadas'] = {}
-
                 for key, label in transformaciones:
                     opciones['transformaciones_seleccionadas'][key] = st.sidebar.checkbox(label=label, value=False, key=key)
 
@@ -319,7 +308,35 @@ def main():
             )
             opciones['uploaded_image'] = uploaded_image
 
-            procesamiento_individual(opciones)
+            # Opciones adicionales
+            opciones['mostrar_metadatos'] = st.sidebar.checkbox("Mostrar Metadatos", value=False)
+            opciones['aplicar_voilut'] = st.sidebar.checkbox("Aplicar VOI LUT", value=False)
+            opciones['invertir_interpretacion'] = st.sidebar.checkbox("Invertir Interpretación Fotométrica", value=False)
+            opciones['aplicar_transformaciones'] = st.sidebar.checkbox("Ajustes de Imagen y Filtrado", value=False)
+
+            # Si se selecciona aplicar transformaciones, mostrar las opciones
+            if opciones['aplicar_transformaciones']:
+                st.sidebar.write("### Selecciona los Ajustes de Imagen y Filtrado a Aplicar")
+
+                # Crear una lista de transformaciones
+                transformaciones = [
+                    ('voltear_horizontal', "Volteo Horizontal"),
+                    ('voltear_vertical', "Volteo Vertical"),
+                    ('brillo_contraste', "Ajuste de Brillo y Contraste"),
+                    ('ruido_gaussiano', "Añadir Ruido Gaussiano"),
+                    ('recorte_redimension', "Recorte Aleatorio y Redimensionado"),
+                    ('desenfoque', "Aplicar Desenfoque")
+                ]
+
+                # Diccionario para almacenar las selecciones
+                opciones['transformaciones_seleccionadas'] = {}
+                for key, label in transformaciones:
+                    opciones['transformaciones_seleccionadas'][key] = st.sidebar.checkbox(label=label, value=False, key=key)
+
+            if opciones.get('uploaded_image'):
+                procesamiento_individual(opciones)
+            else:
+                st.info("Por favor, carga una imagen DICOM, PNG o JPG para realizar la clasificación.")
 
         elif subseccion_ai == "Procesamiento Masivo":
             st.sidebar.write("#### Opciones para Procesamiento Masivo")
@@ -332,4 +349,7 @@ def main():
             )
             opciones['uploaded_images'] = uploaded_images
 
-            procesamiento_masivo(opciones)
+            if uploaded_images:
+                procesamiento_masivo(opciones)
+            else:
+                st.info("Por favor, carga una o más imágenes DICOM, PNG o JPG para realizar la clasificación.")

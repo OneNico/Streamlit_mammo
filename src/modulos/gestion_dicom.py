@@ -7,7 +7,6 @@ from PIL import Image
 from concurrent.futures import ThreadPoolExecutor
 from io import BytesIO
 import zipfile
-#ok
 
 from src.modulos.procesamiento_i import procesamiento_individual
 from src.modulos.procesamiento_m import procesamiento_masivo
@@ -16,7 +15,7 @@ from src.modulos.visor_dicom import visualizar_dicom
 logger = logging.getLogger(__name__)
 
 def gestionar_dicom(opciones):
-    if opciones.get('subseccion') == "Exploración de Imágenes DICOM":
+    if opciones.get('subseccion') == "Visor DICOM":
         visualizar_dicom(opciones)
     elif opciones.get('subseccion') == "Exportar Imágenes a PNG/JPG":
         exportar_imagenes_png_jpg(opciones)

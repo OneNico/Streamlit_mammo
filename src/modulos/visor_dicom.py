@@ -21,79 +21,84 @@ def visualizar_dicom(opciones):
     num_imagenes = len(uploaded_files)
     logger.info(f"Cantidad de imágenes cargadas para visualización: {num_imagenes}")
 
-    if num_imagenes == 0:
-        st.info("No has cargado ningún archivo DICOM.")
-        return
-
     # Seleccionar la imagen a visualizar
     selected_file = st.selectbox("Selecciona una imagen DICOM para visualizar", uploaded_files, format_func=lambda x: x.name)
 
     # Botón para abrir el visor
     if st.button("Abrir Visor DICOM"):
-        with st.modal("Visor DICOM"):
-            imagen, ds = procesar_imagen_dicom(selected_file)
+        mostrar_visor(selected_file)
 
-            if imagen is not None:
-                # Control de brillo
-                brillo = st.slider("Brillo", -100, 100, 0)
-                contraste = st.slider("Contraste", -100, 100, 0)
+def mostrar_visor(selected_file):
+    with st.container():
+        imagen, ds = procesar_imagen_dicom(selected_file)
 
-                # Aplicar ajustes de brillo y contraste
-                imagen_editada = ajustar_brillo_contraste(imagen, brillo, contraste)
+        if imagen is not None:
+            # Control de brillo
+            brillo = st.slider("Brillo", -100, 100, 0)
+            contraste = st.slider("Contraste", -100, 100, 0)
 
-                # Mostrar imagen
-                st.image(imagen_editada, caption=selected_file.name, use_column_width=True)
+            # Aplicar ajustes de brillo y contraste
+            imagen_editada = ajustar_brillo_contraste(imagen, brillo, contraste)
 
-                # Anotaciones
-                st.subheader("Anotar Imagen DICOM")
-                canvas_result = st_canvas(
-                    fill_color="rgba(255, 165, 0, 0.3)",
-                    stroke_width=2,
-                    stroke_color="#000000",
-                    background_image=imagen_editada,
-                    update_streamlit=True,
-                    height=imagen_editada.height,
-                    width=imagen_editada.width,
-                    drawing_mode="rectangle",
-                    key="canvas",
-                )
+            # Mostrar imagen
+            st.image(imagen_editada, caption=selected_file.name, use_column_width=True)
 
-                if canvas_result.json_data is not None:
-                    st.write("### Anotaciones:")
-                    st.json(canvas_result.json_data)
+            # Anotaciones
+            st.subheader("Anotar Imagen DICOM")
+            canvas_result = st_canvas(
+                fill_color="rgba(255, 165, 0, 0.3)",
+                stroke_width=2,
+                stroke_color="#000000",
+                background_image=imagen_editada,
+                update_streamlit=True,
+                height=imagen_editada.height,
+                width=imagen_editada.width,
+                drawing_mode="rectangle",
+                key="canvas",
+            )
 
-                # Opciones de movimiento (simples controles de navegación)
-                st.subheader("Mover Imagen")
-                col1, col2, col3 = st.columns(3)
-                with col1:
-                    if st.button("Mover Arriba"):
-                        st.write("Funcionalidad de mover arriba no implementada.")
-                with col2:
-                    if st.button("Mover Centro"):
-                        st.write("Funcionalidad de mover al centro no implementada.")
-                with col3:
-                    if st.button("Mover Abajo"):
-                        st.write("Funcionalidad de mover abajo no implementada.")
+            if canvas_result.json_data is not None:
+                st.write("### Anotaciones:")
+                st.json(canvas_result.json_data)
 
-                # Descargar DICOM modificado
-                st.subheader("Descargar Imagen DICOM Modificada")
-                if st.button("Descargar DICOM"):
-                    try:
-                        # Aplicar los cambios al dataset DICOM
-                        ds.PixelData = np.array(imagen_editada.convert("L")).tobytes()
-                        dicom_buffer = BytesIO()
-                        ds.save_as(dicom_buffer)
-                        dicom_buffer.seek(0)
-                        st.download_button(
-                            label="Descargar DICOM",
-                            data=dicom_buffer,
-                            file_name=f"modificado_{selected_file.name}",
-                            mime="application/dicom"
-                        )
-                    except Exception as e:
-                        st.error(f"Error al descargar el archivo DICOM: {e}")
-            else:
-                st.error(f"No se pudo procesar la imagen {selected_file.name}")
+            # Opciones de movimiento (simples controles de navegación)
+            st.subheader("Mover Imagen")
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                if st.button("Mover Arriba"):
+                    st.write("Funcionalidad de mover arriba no implementada.")
+            with col2:
+                if st.button("Mover Centro"):
+                    st.write("Funcionalidad de mover al centro no implementada.")
+            with col3:
+                if st.button("Mover Abajo"):
+                    st.write("Funcionalidad de mover abajo no implementada.")
+
+            # Descargar DICOM modificado
+            st.subheader("Descargar Imagen DICOM Modificada")
+            if st.button("Descargar DICOM"):
+                try:
+                    # Aplicar los cambios al dataset DICOM
+                    # Convertir la imagen editada a escala de grises
+                    imagen_gris = imagen_editada.convert("L")
+                    # Obtener los datos de píxeles como bytes
+                    pixel_data = np.array(imagen_gris)
+                    ds.PixelData = pixel_data.tobytes()
+                    ds.Rows, ds.Columns = pixel_data.shape
+
+                    dicom_buffer = BytesIO()
+                    ds.save_as(dicom_buffer)
+                    dicom_buffer.seek(0)
+                    st.download_button(
+                        label="Descargar DICOM",
+                        data=dicom_buffer,
+                        file_name=f"modificado_{selected_file.name}",
+                        mime="application/dicom"
+                    )
+                except Exception as e:
+                    st.error(f"Error al descargar el archivo DICOM: {e}")
+        else:
+            st.error(f"No se pudo procesar la imagen {selected_file.name}")
 
 def procesar_imagen_dicom(dicom_file):
     """

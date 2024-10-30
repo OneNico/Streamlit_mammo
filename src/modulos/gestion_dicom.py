@@ -1,5 +1,3 @@
-# src/modulos/gestion_dicom.py
-
 import streamlit as st
 import os
 import numpy as np
@@ -10,74 +8,17 @@ from concurrent.futures import ThreadPoolExecutor
 from io import BytesIO
 import zipfile
 
+from src.modulos.procesamiento_i import procesamiento_individual
+from src.modulos.procesamiento_m import procesamiento_masivo
+from src.modulos.visor_dicom import visualizar_dicom
+
 logger = logging.getLogger(__name__)
 
 def gestionar_dicom(opciones):
     if opciones.get('subseccion') == "Exploración de Imágenes DICOM":
-        mostrar_exploracion_dicom(opciones)
+        visualizar_dicom(opciones)
     elif opciones.get('subseccion') == "Exportar Imágenes a PNG/JPG":
         exportar_imagenes_png_jpg(opciones)
-
-def mostrar_exploracion_dicom(opciones):
-    st.write("---")
-    st.subheader("Exploración de Imágenes DICOM")
-
-    uploaded_files = opciones.get('uploaded_files', [])
-    if not uploaded_files:
-        st.info("No has cargado ningún archivo DICOM.")
-        return
-
-    num_imagenes = len(uploaded_files)
-    logger.info(f"Cantidad de imágenes cargadas: {num_imagenes}")
-
-    if num_imagenes == 1:
-        # Mostrar una sola imagen en alta resolución
-        dicom_file = uploaded_files[0]
-        with st.container():
-            with st.spinner("Procesando la imagen..."):
-                imagen, ds = procesar_imagen_dicom_cached(dicom_file.getvalue(), opciones)
-            if imagen is not None:
-                st.image(imagen, caption=dicom_file.name, use_column_width=True)
-                if opciones.get('mostrar_metadatos', False) and ds is not None:
-                    metadatos = obtener_metadatos_relevantes(ds)
-                    st.expander("Metadatos").write(metadatos)
-            else:
-                st.error(f"No se pudo procesar la imagen {dicom_file.name}")
-    else:
-        # Mostrar múltiples imágenes en columnas con tamaño reducido
-        num_columns = min(3, num_imagenes)  # Máximo 3 columnas
-        cols = st.columns(num_columns)
-        with ThreadPoolExecutor(max_workers=4) as executor:
-            futures = [
-                executor.submit(procesar_imagen_dicom_cached, dicom_file.getvalue(), opciones)
-                for dicom_file in uploaded_files
-            ]
-
-            # Barra de progreso
-            progress_bar = st.progress(0)
-            total = len(futures)
-
-            for idx, future in enumerate(futures):
-                try:
-                    imagen, ds = future.result()
-                    logger.info(f"Imagen procesada: {uploaded_files[idx].name}")
-                except Exception as e:
-                    st.error(f"Error al procesar la imagen {uploaded_files[idx].name}: {e}")
-                    logger.error(f"Error al procesar la imagen {uploaded_files[idx].name}: {e}")
-                    continue
-
-                dicom_file = uploaded_files[idx]
-                if imagen is not None:
-                    with cols[idx % num_columns]:
-                        st.image(imagen, caption=dicom_file.name, use_column_width=True)
-                        if opciones.get('mostrar_metadatos', False) and ds is not None:
-                            metadatos = obtener_metadatos_relevantes(ds)
-                            st.expander("Metadatos").write(metadatos)
-                else:
-                    st.error(f"No se pudo procesar la imagen {dicom_file.name}")
-
-                # Actualizar barra de progreso
-                progress_bar.progress((idx + 1) / total)
 
 def exportar_imagenes_png_jpg(opciones):
     st.header("Exportar Imágenes a PNG/JPG")
@@ -241,20 +182,6 @@ def leer_imagen_dicom(dicom_file_bytes):
     except Exception as e:
         logger.error(f"Error al leer el archivo DICOM: {e}")
         return None
-
-def obtener_metadatos_relevantes(ds):
-    """
-    Extrae y devuelve los metadatos relevantes del dataset DICOM.
-    """
-    metadatos = {
-        "Patient ID": getattr(ds, 'PatientID', 'Desconocido'),
-        "Study Date": getattr(ds, 'StudyDate', 'Desconocido'),
-        "Modality": getattr(ds, 'Modality', 'Desconocido'),
-        "Photometric Interpretation": getattr(ds, 'PhotometricInterpretation', 'Desconocido'),
-        "Rows": getattr(ds, 'Rows', 'Desconocido'),
-        "Columns": getattr(ds, 'Columns', 'Desconocido'),
-    }
-    return metadatos
 
 def convertir_dicom_bytes_a_imagen(dicom_bytes, output_size=(224, 224), aplicar_transformaciones=False, opciones_transformaciones=None):
     """

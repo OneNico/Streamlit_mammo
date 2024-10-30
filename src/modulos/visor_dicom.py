@@ -6,6 +6,7 @@ from io import BytesIO
 import os
 import logging
 from streamlit_drawable_canvas import st_canvas
+from pydicom.pixels import apply_voi_lut  # Actualización de importación
 
 logger = logging.getLogger(__name__)
 
@@ -118,10 +119,7 @@ def procesar_imagen_dicom(dicom_file):
         original_image = dicom.pixel_array
 
         # Aplicar VOI LUT si está disponible
-        if hasattr(pydicom.pixel_data_handlers, 'apply_voi_lut'):
-            img_windowed = pydicom.pixel_data_handlers.apply_voi_lut(original_image, dicom)
-        else:
-            img_windowed = original_image
+        img_windowed = apply_voi_lut(original_image, dicom)
 
         # Manejar Photometric Interpretation
         photometric_interpretation = dicom.get('PhotometricInterpretation', 'UNKNOWN')

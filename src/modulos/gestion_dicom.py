@@ -136,7 +136,6 @@ def procesar_imagen_dicom_cached(dicom_file_bytes, opciones):
 
         # Aplicar VOI LUT si está seleccionado
         if opciones.get("aplicar_voilut", True):
-            from pydicom.pixel_data_handlers.util import apply_voi_lut
             data = apply_voi_lut(data, ds)
 
         # Si la interpretación es MONOCHROME1, invertimos la imagen y cambiamos a MONOCHROME2
@@ -177,7 +176,7 @@ def leer_imagen_dicom(dicom_file_bytes):
     Lee un archivo DICOM y devuelve el dataset.
     """
     try:
-        ds = pydicom.dcmread(pydicom.filebase.DicomBytesIO(dicom_file_bytes))
+        ds = pydicom.dcmread(BytesIO(dicom_file_bytes))
         return ds
     except Exception as e:
         logger.error(f"Error al leer el archivo DICOM: {e}")
@@ -189,11 +188,11 @@ def convertir_dicom_bytes_a_imagen(dicom_bytes, output_size=(224, 224), aplicar_
     """
     try:
         # Leer el dataset DICOM
-        dicom = pydicom.dcmread(pydicom.filebase.DicomBytesIO(dicom_bytes))
+        dicom = pydicom.dcmread(BytesIO(dicom_bytes))
         original_image = dicom.pixel_array
 
         # Aplicar VOI LUT
-        img_windowed = pydicom.pixel_data_handlers.apply_voi_lut(original_image, dicom)
+        img_windowed = apply_voi_lut(original_image, dicom)
 
         # Manejar Photometric Interpretation
         photometric_interpretation = dicom.get('PhotometricInterpretation', 'UNKNOWN')

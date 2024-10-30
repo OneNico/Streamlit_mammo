@@ -7,6 +7,7 @@ from PIL import Image
 from concurrent.futures import ThreadPoolExecutor
 from io import BytesIO
 import zipfile
+#ok
 
 from src.modulos.procesamiento_i import procesamiento_individual
 from src.modulos.procesamiento_m import procesamiento_masivo

@@ -86,13 +86,6 @@ def procesamiento_individual(opciones):
                         else:
                             st.error("No se pudo cargar el modelo secundario para la clasificación de calcificaciones.")
 
-                # Mostrar el reporte
-                if st.button("Mostrar Reporte"):
-                    mostrar_reporte(
-                        mapped_result_primary,
-                        mapped_result_secondary_masas,
-                        mapped_result_secondary_calcifi
-                    )
             else:
                 st.error("No se pudo cargar el modelo primario para la clasificación.")
         else:
@@ -233,60 +226,3 @@ def mostrar_resultados(mapped_result, titulo):
         st.write(f"**{mapped_result['label'].capitalize()}**: {mapped_result['score'] * 100:.2f}%")
     else:
         st.write(f"No se pudieron obtener resultados de la {titulo.lower()}.")
-
-def mostrar_reporte(mapped_result_primary, mapped_result_secondary_masas=None, mapped_result_secondary_calcifi=None):
-    """
-    Genera y muestra un reporte basado en los resultados de la clasificación de la mamografía.
-    """
-    st.header("Reporte de Clasificación de Mamografías")
-
-    st.subheader("Resultados de la Clasificación Primaria")
-    if mapped_result_primary:
-        st.write(f"**{mapped_result_primary['label'].capitalize()}**: {mapped_result_primary['score'] * 100:.2f}%")
-    else:
-        st.write("No se obtuvieron resultados de la clasificación primaria.")
-
-    if mapped_result_primary and mapped_result_primary['label'] == 'masas' and mapped_result_secondary_masas:
-        st.subheader("Resultados de la Clasificación Secundaria para Masas")
-        st.write(f"**{mapped_result_secondary_masas['label'].capitalize()}**: {mapped_result_secondary_masas['score'] * 100:.2f}%")
-
-    if mapped_result_primary and mapped_result_primary['label'] == 'calcificaciones' and mapped_result_secondary_calcifi:
-        st.subheader("Resultados de la Clasificación Secundaria para Calcificaciones")
-        st.write(f"**{mapped_result_secondary_calcifi['label'].capitalize()}**: {mapped_result_secondary_calcifi['score'] * 100:.2f}%")
-
-    st.markdown("---")  # Separador
-
-    st.subheader("Conclusiones")
-
-    # Generar conclusiones basadas en los resultados
-    if mapped_result_primary:
-        if mapped_result_primary['label'] == 'no_encontrado':
-            st.write("**Conclusión:** No se encontraron masas ni calcificaciones en la mamografía analizada. Los tejidos mamarios presentan características normales dentro de los parámetros evaluados. Se recomienda continuar con controles regulares según las indicaciones médicas.")
-        elif mapped_result_primary['label'] in ['masas', 'calcificaciones']:
-            # Obtener la etiqueta secundaria correspondiente
-            if mapped_result_primary['label'] == 'masas' and mapped_result_secondary_masas:
-                etiqueta_secundaria = mapped_result_secondary_masas['label']
-            elif mapped_result_primary['label'] == 'calcificaciones' and mapped_result_secondary_calcifi:
-                etiqueta_secundaria = mapped_result_secondary_calcifi['label']
-            else:
-                etiqueta_secundaria = None
-
-            if etiqueta_secundaria:
-                if etiqueta_secundaria == 'benigno':
-                    st.write("**Conclusión:** Se han identificado hallazgos probablemente benignos. Se recomienda una evaluación inmediata con proyecciones adicionales o ecografía y seguimiento a corto plazo cada 6 meses, generalmente durante dos años, para confirmar la estabilidad del hallazgo en tamaño y aspecto.")
-                    st.write("Los hallazgos tienen una alta probabilidad de ser benignos (más del 98%). ")
-                    st.write("Si en un plazo mínimo de dos años el hallazgo se mantiene estable, se podrá considerar como benigno y continuar con controles anuales.")
-                elif etiqueta_secundaria == 'sospechoso':
-                    st.write("**Conclusión:** Se han identificado hallazgos sospechosos que requieren mayor evaluación. Se recomienda considerar la realización de una biopsia para caracterizar los hallazgos de manera definitiva y obtener un diagnóstico certero.")
-                    st.write("Los hallazgos presentan una sospecha intermedia de malignidad. Es importante seguir las indicaciones médicas para determinar el plan de acción más adecuado.")
-                elif etiqueta_secundaria == 'maligno':
-                    st.write("**Conclusión:** Los hallazgos sugieren una alta probabilidad de malignidad. Se observan características que podrían indicar la presencia de cáncer, como masas con contornos irregulares o microcalcificaciones anómalas.")
-                    st.write("Se recomienda encarecidamente realizar una biopsia para confirmar el diagnóstico y, de ser necesario, iniciar el tratamiento oportuno.")
-            else:
-                st.write("No se pudo determinar la clasificación secundaria. Se recomienda consultar con un especialista para una evaluación detallada.")
-    else:
-        st.write("No se pudieron generar conclusiones debido a la falta de resultados en la clasificación primaria.")
-
-    st.markdown("---")  # Separador
-
-    st.write("**Nota:** Este reporte es generado automáticamente y debe ser interpretado por un profesional de la salud. Siempre consulte a su médico para obtener un diagnóstico y tratamiento adecuados.")

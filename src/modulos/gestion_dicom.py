@@ -1,10 +1,11 @@
+# src/modulos/gestion_dicom.py
+
 import streamlit as st
 import os
 import numpy as np
 import pydicom
 import logging
 from PIL import Image
-from concurrent.futures import ThreadPoolExecutor
 from io import BytesIO
 import zipfile
 
@@ -49,25 +50,26 @@ def exportar_imagenes_png_jpg(opciones):
     format_options = ["PNG", "JPG"]
     selected_format = st.selectbox("Selecciona el formato de salida", format_options)
 
-    # Opciones adicionales
-    aplicar_transformaciones = st.checkbox("Aplicar Transformaciones", value=False)
-    opciones_transformaciones = {}
-    if aplicar_transformaciones:
-        st.write("### Selecciona las Transformaciones a Aplicar")
+    # **Eliminar las opciones adicionales**
+    # Opciones comentadas para no aparecer en la interfaz
+    # aplicar_transformaciones = st.checkbox("Aplicar Transformaciones", value=False)
+    # opciones_transformaciones = {}
+    # if aplicar_transformaciones:
+    #     st.write("### Selecciona las Transformaciones a Aplicar")
 
-        # Crear una lista de transformaciones
-        transformaciones = [
-            ('voltear_horizontal', "Volteo Horizontal"),
-            ('voltear_vertical', "Volteo Vertical"),
-            ('brillo_contraste', "Ajuste de Brillo y Contraste"),
-            ('ruido_gaussiano', "Añadir Ruido Gaussiano"),
-            ('recorte_redimension', "Recorte Aleatorio y Redimensionado"),
-            ('desenfoque', "Aplicar Desenfoque")
-        ]
+    #     # Crear una lista de transformaciones
+    #     transformaciones = [
+    #         ('voltear_horizontal', "Volteo Horizontal"),
+    #         ('voltear_vertical', "Volteo Vertical"),
+    #         ('brillo_contraste', "Ajuste de Brillo y Contraste"),
+    #         ('ruido_gaussiano', "Añadir Ruido Gaussiano"),
+    #         ('recorte_redimension', "Recorte Aleatorio y Redimensionado"),
+    #         ('desenfoque', "Aplicar Desenfoque")
+    #     ]
 
-        # Diccionario para almacenar las selecciones
-        for key, label in transformaciones:
-            opciones_transformaciones[key] = st.checkbox(label=label, value=False, key=key)
+    #     # Diccionario para almacenar las selecciones
+    #     for key, label in transformaciones:
+    #         opciones_transformaciones[key] = st.checkbox(label=label, value=False, key=key)
 
     # Botón para iniciar la conversión
     if st.button("Iniciar Conversión"):
@@ -88,8 +90,10 @@ def exportar_imagenes_png_jpg(opciones):
                     image = convertir_dicom_bytes_a_imagen(
                         dicom_bytes,
                         selected_size,
-                        aplicar_transformaciones,
-                        opciones_transformaciones
+                        # aplicar_transformaciones,
+                        # opciones_transformaciones
+                        aplicar_transformaciones=False,
+                        opciones_transformaciones={}
                     )
                     if image is not None:
                         output_filename = f"{os.path.splitext(dicom_file.name)[0]}.{selected_format.lower()}"
@@ -140,12 +144,8 @@ def procesar_imagen_dicom_cached(dicom_file_bytes, opciones):
 
         # Si la interpretación es MONOCHROME1, invertimos la imagen y cambiamos a MONOCHROME2
         if ds.PhotometricInterpretation == 'MONOCHROME1':
-            data = np.amax(data) - data
+            data = np.max(data) - data
             ds.PhotometricInterpretation = 'MONOCHROME2'
-
-        # Invertir interpretación si el usuario lo seleccionó
-        if opciones.get('invertir_interpretacion', False):
-            data = np.amax(data) - data
 
         # Normalizar la imagen
         data = data - np.min(data)
